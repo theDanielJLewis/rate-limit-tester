@@ -40,7 +40,7 @@ function testRateLimit() {
         });
 
         // Run a minute's worth of tests
-        const totalRuns = testLimit * 10;
+        const totalRuns = testLimit * 60;
         var bar = new ProgressBar(`${testLimit} per time |:bar| :percent`, { 
             total: totalRuns,
             // clear: true
