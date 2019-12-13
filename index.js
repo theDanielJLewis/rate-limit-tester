@@ -3,8 +3,15 @@ const Bottleneck = require('bottleneck');
 const async = require('async');
 const ProgressBar = require('progress');
 const argv = require('yargs')
-    // .usage('Usage: $0 -w [num] -h [num]')
-    // .demandOption(['w','h'])
+    .usage('Usage: node $0 --url=[URL] --max=[NUM] [OPTIONS]')
+    .describe('url', 'URL to test, best to be in quotation marks')
+    .describe('max', 'Maximum requests to run per time')
+    .describe('min', 'Minimum requests to run per time')
+    .describe('s', 'Set to requests to second [default]')
+    .describe('m', 'Set to requests to minute')
+    .alias('u', 'url')
+    .alias('h', 'help')
+    .demandOption(['url','max'])
     .argv;
 
 function testRateLimit() {
@@ -41,7 +48,7 @@ function testRateLimit() {
 
         // Run a minute's worth of tests
         const totalRuns = testLimit * 60;
-        var bar = new ProgressBar(`${testLimit} per time |:bar| :percent`, { 
+        var bar = new ProgressBar(`${testLimit} per time |:bar| :percent :elapsed`, { 
             total: totalRuns,
             // clear: true
             width: 40,
