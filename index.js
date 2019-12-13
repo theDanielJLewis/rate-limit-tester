@@ -57,7 +57,7 @@ function testRateLimit() {
                     nextRun();
                 })
                 .catch((error) => {
-                    nextRun(`${testLimit} per time failed (${error.statusCode})`);
+                    nextRun(`\n${testLimit} per time failed (${error.statusCode})`);
                 });
         }, (error) => { // Do this when finished or failed
             if (error) { 
