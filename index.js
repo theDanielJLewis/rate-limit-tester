@@ -27,12 +27,13 @@ function testRateLimit() {
     const reqOptions = {
         simple: true,
         resolveWithFullResponse: true,
+        time: true,
     }
 
     // How many different rate limits to test
     const limitsToTest = max - min + 1;
     console.log(limitsToTest, 'limits to test:', min, 'to', max, 'per time');
-    async.timesLimit(limitsToTest, 1, (limitTestNum, nextTest) => {
+    async.timesLimit(limitsToTest, 1, async function(limitTestNum, nextTest) {
 
         // The limit to test
         const testLimit = min + limitTestNum;
@@ -46,16 +47,28 @@ function testRateLimit() {
             // minTime: 333 // pick a value that makes sense for your use case
         });
 
+        // Test response time to figure out how many requests to send in a minute
+        try {
+            speedtest = await rp(url, reqOptions);
+            var speedtestTiming = speedtest.timingPhases.total;
+            timesPerSecond = (1000 / speedtestTiming);
+            if (timesPerSecond > max) timesPerSecond = max
+            // if (testTimed > 1) testTimed = 1;
+        } catch (error) {
+            console.error(error);    
+        }
+
         // Run a minute's worth of tests
-        const totalRuns = testLimit * 60;
-        var bar = new ProgressBar(`${testLimit} per time |:bar| :percent :elapsed`, { 
-            total: totalRuns,
+        const timesToRun = Math.round(testLimit * (60 * timesPerSecond));
+        console.log(testLimit, 'per time in', timesToRun, 'runs');
+        var bar = new ProgressBar('|:bar| :percent :elapsed', { 
+            total: timesToRun,
             // clear: true
             width: 40,
         });
 
-        // console.log(testLimit, 'per time:');
-        async.timesLimit(totalRuns, 1, (runNum, nextRun) => {
+
+        async.timesLimit(timesToRun, 1, (runNum, nextRun) => {
             // console.log('run', runNum, 'for', testLimit, 'per time');
             limiter.schedule(() => rp(url, reqOptions))
                 .then((result) => {
