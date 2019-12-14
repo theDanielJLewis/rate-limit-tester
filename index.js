@@ -66,8 +66,8 @@ prepTest();
 async function prepTest() {
     try {
         const speedtest = await rp(url, reqOptions);
-        // var speedtestTiming = speedtest.timingPhases.total; // Pretend it's 500 ms
-        var speedtestTiming = 150; // Pretend it's 500 ms
+        var speedtestTiming = speedtest.timingPhases.total;
+        // var speedtestTiming = 150; // Pretend it's 500 ms
         console.log(speedtestTiming, 'ms per run');
         runTest(speedtestTiming);
     } catch (error) {
