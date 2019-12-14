@@ -101,7 +101,7 @@ function prepTest() {
     }, (error) => {
         if (error) console.error(error);
         const mediaTiming = calcMedian(speedtestTimings);
-        const averageTiming = calcMedian(speedtestTimings);
+        const averageTiming = calcAverage(speedtestTimings);
         // console.log(speedtestTiming);
         console.log(mediaTiming, 'ms median per test');
         console.log(averageTiming, 'ms average per test');
