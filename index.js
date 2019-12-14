@@ -52,11 +52,13 @@ function testRateLimit() {
             .then( (speedtest) => {
                 var speedtestTiming = speedtest.timingPhases.total;
                 timesPerSecond = (1000 / speedtestTiming);
+                // console.log(timesPerSecond);
                 if (timesPerSecond > max) timesPerSecond = max;
+                // console.log(timesPerSecond);
             })
             .then( function() {
                 // Run a minute's worth of tests
-                const timesToRun = Math.round(testLimit * (60 * timesPerSecond));
+                const timesToRun = Math.round(60 * timesPerSecond);
                 console.log(testLimit, 'per time in', timesToRun, 'runs');
                 var bar = new ProgressBar('|:bar| :percent :elapsed', { 
                     total: timesToRun,
