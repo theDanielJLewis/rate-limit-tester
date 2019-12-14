@@ -33,7 +33,7 @@ function testRateLimit() {
     // How many different rate limits to test
     const limitsToTest = max - min + 1;
     console.log(limitsToTest, 'limits to test:', min, 'to', max, 'per time');
-    async.timesLimit(limitsToTest, 1, async function(limitTestNum, nextTest) {
+    async.timesLimit(limitsToTest, 1, function(limitTestNum, nextTest) {
 
         // The limit to test
         const testLimit = min + limitTestNum;
@@ -48,45 +48,48 @@ function testRateLimit() {
         });
 
         // Test response time to figure out how many requests to send in a minute
-        try {
-            speedtest = await rp(url, reqOptions);
-            var speedtestTiming = speedtest.timingPhases.total;
-            timesPerSecond = (1000 / speedtestTiming);
-            if (timesPerSecond > max) timesPerSecond = max
-            // if (testTimed > 1) testTimed = 1;
-        } catch (error) {
-            console.error(error);    
-        }
-
-        // Run a minute's worth of tests
-        const timesToRun = Math.round(testLimit * (60 * timesPerSecond));
-        console.log(testLimit, 'per time in', timesToRun, 'runs');
-        var bar = new ProgressBar('|:bar| :percent :elapsed', { 
-            total: timesToRun,
-            // clear: true
-            width: 40,
-        });
-
-
-        async.timesLimit(timesToRun, 1, (runNum, nextRun) => {
-            // console.log('run', runNum, 'for', testLimit, 'per time');
-            limiter.schedule(() => rp(url, reqOptions))
-                .then((result) => {
-                    bar.tick();
-                    // console.log(result.statusCode);
-                    nextRun();
-                })
-                .catch((error) => {
-                    nextRun(`\n${testLimit} per time failed (${error.statusCode})`);
+        rp(url, reqOptions)
+            .then( (speedtest) => {
+                var speedtestTiming = speedtest.timingPhases.total;
+                timesPerSecond = (1000 / speedtestTiming);
+                if (timesPerSecond > max) timesPerSecond = max;
+                console.log(timesPerSecond);
+            })
+            .then( function() {
+                // Run a minute's worth of tests
+                const timesToRun = Math.round(testLimit * (60 * timesPerSecond));
+                console.log(testLimit, 'per time in', timesToRun, 'runs');
+                var bar = new ProgressBar('|:bar| :percent :elapsed', { 
+                    total: timesToRun,
+                    // clear: true
+                    width: 40,
                 });
-        }, (error) => { // Do this when finished or failed
-            if (error) { 
-                nextTest(error);
-            } else {
-                console.log('Success');
-                nextTest();
-            };
-        });
+                async.timesLimit(timesToRun, 1, (runNum, nextRun) => {
+                    // console.log('run', runNum, 'for', testLimit, 'per time');
+                    limiter.schedule(() => rp(url, reqOptions))
+                        .then((result) => {
+                            bar.tick();
+                            // console.log(result.statusCode);
+                            nextRun();
+                        })
+                        .catch((error) => {
+                            console.error('1', error);
+                            nextRun(`\n${testLimit} per time failed (${error.statusCode})`);
+                        });
+                }, (error) => { // Do this when finished or failed
+                    if (error) {
+                        console.error('2', error);
+                        nextTest(error);
+                    } else {
+                        console.log('Success');
+                        nextTest();
+                    };
+                });
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+
 
     }, (error) => { // Do this when finished or failed
         if (error) console.log(error);
