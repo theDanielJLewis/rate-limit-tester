@@ -53,7 +53,6 @@ function testRateLimit() {
                 var speedtestTiming = speedtest.timingPhases.total;
                 timesPerSecond = (1000 / speedtestTiming);
                 if (timesPerSecond > max) timesPerSecond = max;
-                console.log(timesPerSecond);
             })
             .then( function() {
                 // Run a minute's worth of tests
