@@ -75,13 +75,21 @@ function calcMedian(values) {
     if (values.length % 2) return values[half];
   
     return Math.round((values[half - 1] + values[half]) / 2.0);
-}  
+}
+
+function calcAverage(values) {
+    if (values.length === 0) return 0;
+  
+    let average = values.reduce((a, b) => a + b) / values.length;
+  
+    return Math.round(average);
+  }
 
 
 // Test response time to figure out how many requests to send in a minute
 function prepTest() {
     var speedtestTimings = [];
-    async.timesLimit(5, 1, async function(prepNum){
+    async.timesLimit(10, 1, async function(prepNum){
         try {
             const speedtest = await rp(url, reqOptions);
             speedtestTimings.push(speedtest.timingPhases.total);
@@ -94,6 +102,8 @@ function prepTest() {
         if (error) console.error(error);
         const speedtestTiming = calcMedian(speedtestTimings);
         // console.log(speedtestTiming);
+        console.log(speedtestTiming, 'ms median per test');
+        console.log(calcAverage(speedtestTimings), 'ms average per test');
         console.log('Pausing for 10 seconds before continuing …');
         setTimeout(() => {
             runTest(speedtestTiming);
