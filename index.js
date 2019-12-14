@@ -63,6 +63,7 @@ switch (argv.per) {
 
 prepTest();
 
+// Test response time to figure out how many requests to send in a minute
 async function prepTest() {
     try {
         const speedtest = await rp(url, reqOptions);
@@ -118,62 +119,35 @@ function runTest(speedtestTiming) {
 
         }
 
-        // Test response time to figure out how many requests to send in a minute
-        rp(url, reqOptions)
-            .then( (speedtest) => {
-                // var speedtestTiming = speedtest.timingPhases.total; // Pretend it's 500 ms
-                var speedtestTiming = 150; // Pretend it's 500 ms
-                console.log(speedtestTiming, 'ms per run');
-                if (argv.test == 'concurrent') {
-                    timesPerSecond = speedtestTiming / 1000;
-                    // console.log(timesPerSecond);
-                    // if (timesPerSecond > max) timesPerSecond = max;
-                    // console.log(timesPerSecond);
-                    timesPerMinute = (60 / timesPerSecond) * testLimit;
-                    // console.log(timesPerMinute);
-                } else if (argv.test == 'persecond') {
-                    timesPerSecond = (1000 / speedtestTiming);
-                    // console.log(timesPerSecond);
-                    if (timesPerSecond > testLimit) timesPerSecond = testLimit;
-                    // console.log(timesPerSecond);
-                    timesPerMinute = 60 * timesPerSecond;
-                }
-            })
-            .then( function() {
-                // Run a minute's worth of tests
-                const timesToRun = Math.round(timesPerMinute);
-                console.log(testLimit, 'per time in', timesToRun, 'runs');
-                var bar = new ProgressBar('|:bar| :percent :elapsed', { 
-                    total: timesToRun,
-                    // clear: true
-                    width: 40,
+        // Run a minute's worth of tests
+        const timesToRun = Math.round(timesPerMinute);
+        console.log(testLimit, 'per time in', timesToRun, 'runs');
+        var bar = new ProgressBar('|:bar| :percent :elapsed', { 
+            total: timesToRun,
+            // clear: true
+            width: 40,
+        });
+        async.times(timesToRun, (runNum, nextRun) => {
+            // console.log('run', runNum, 'for', testLimit, 'per time');
+            limiter.schedule(() => rp(url, reqOptions))
+                .then((result) => {
+                    bar.tick();
+                    // console.log(result.statusCode);
+                    nextRun();
+                })
+                .catch((error) => {
+                    console.error('1', error);
+                    nextRun(`\n${testLimit} per time failed (${error.statusCode})`);
                 });
-                async.times(timesToRun, (runNum, nextRun) => {
-                    // console.log('run', runNum, 'for', testLimit, 'per time');
-                    limiter.schedule(() => rp(url, reqOptions))
-                        .then((result) => {
-                            bar.tick();
-                            // console.log(result.statusCode);
-                            nextRun();
-                        })
-                        .catch((error) => {
-                            console.error('1', error);
-                            nextRun(`\n${testLimit} per time failed (${error.statusCode})`);
-                        });
-                }, (error) => { // Do this when finished or failed
-                    if (error) {
-                        console.error('2', error);
-                        nextTest(error);
-                    } else {
-                        console.log('Success');
-                        nextTest();
-                    };
-                });
-            })
-            .catch((error) => {
-                console.error(error);
-            });
-
+        }, (error) => { // Do this when finished or failed
+            if (error) {
+                console.error('2', error);
+                nextTest(error);
+            } else {
+                console.log('Success');
+                nextTest();
+            };
+        });
 
     }, (error) => { // Do this when finished or failed
         if (error) console.log(error);
