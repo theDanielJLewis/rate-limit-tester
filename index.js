@@ -100,13 +100,14 @@ function prepTest() {
         }
     }, (error) => {
         if (error) console.error(error);
-        const speedtestTiming = calcMedian(speedtestTimings);
+        const mediaTiming = calcMedian(speedtestTimings);
+        const averageTiming = calcMedian(speedtestTimings);
         // console.log(speedtestTiming);
-        console.log(speedtestTiming, 'ms median per test');
-        console.log(calcAverage(speedtestTimings), 'ms average per test');
+        console.log(mediaTiming, 'ms median per test');
+        console.log(averageTiming, 'ms average per test');
         console.log('Pausing for 10 seconds before continuing …');
         setTimeout(() => {
-            runTest(speedtestTiming);
+            runTest(averageTiming);
         }, 10 * 1000);
 
     });
