@@ -63,17 +63,43 @@ switch (argv.per) {
 
 prepTest();
 
+function calcMedian(values) {
+    if (values.length === 0) return 0;
+  
+    values.sort(function(a,b){
+      return a-b;
+    });
+  
+    var half = Math.floor(values.length / 2);
+  
+    if (values.length % 2) return values[half];
+  
+    return Math.round((values[half - 1] + values[half]) / 2.0);
+}  
+
+
 // Test response time to figure out how many requests to send in a minute
-async function prepTest() {
-    try {
-        const speedtest = await rp(url, reqOptions);
-        var speedtestTiming = speedtest.timingPhases.total;
-        // var speedtestTiming = 150; // Pretend it's 500 ms
-        console.log(speedtestTiming, 'ms per run');
-        runTest(speedtestTiming);
-    } catch (error) {
-        console.error(error);
-    }
+function prepTest() {
+    var speedtestTimings = [];
+    async.timesLimit(5, 1, async function(prepNum){
+        try {
+            const speedtest = await rp(url, reqOptions);
+            speedtestTimings.push(speedtest.timingPhases.total);
+            // var speedtestTiming = 150; // Pretend it's 500 ms
+            // console.log(speedtestTiming, 'ms per run');
+        } catch (error) {
+            console.error(error);
+        }
+    }, (error) => {
+        if (error) console.error(error);
+        const speedtestTiming = calcMedian(speedtestTimings);
+        // console.log(speedtestTiming);
+        console.log('Pausing for 10 seconds before continuing …');
+        setTimeout(() => {
+            runTest(speedtestTiming);
+        }, 10 * 1000);
+
+    });
 }
 
 
