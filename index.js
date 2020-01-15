@@ -96,10 +96,10 @@ function prepTest() {
             // var speedtestTiming = 150; // Pretend it's 500 ms
             // console.log(speedtestTiming, 'ms per run');
         } catch (error) {
-            console.error(error);
+            console.error(error.message);
         }
     }, (error) => {
-        if (error) console.error(error);
+        if (error) console.error(error.message);
         const mediaTiming = calcMedian(speedtestTimings);
         const averageTiming = calcAverage(speedtestTimings);
         // console.log(speedtestTiming);
@@ -173,12 +173,12 @@ function runTest(speedtestTiming) {
                     nextRun();
                 })
                 .catch((error) => {
-                    console.error('1', error);
+                    console.error('1', error.message);
                     nextRun(`\n${testLimit} per time failed (${error.statusCode})`);
                 });
         }, (error) => { // Do this when finished or failed
             if (error) {
-                console.error('2', error);
+                console.error('2', error.message);
                 nextTest(error);
             } else {
                 console.log('Success');
