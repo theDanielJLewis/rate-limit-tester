@@ -188,6 +188,7 @@ function runTest(speedtestTiming) {
 
     }, (error) => { // Do this when finished or failed
         if (error) console.log(error);
+        process.exit();
     });
 
 }
