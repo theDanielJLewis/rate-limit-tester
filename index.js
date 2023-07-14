@@ -124,7 +124,9 @@ function runTest(speedtestTiming) {
     async.timesLimit(limitsToTest, 1, function(limitTestNum, nextTest) {
 
         // The limit to test
-        testLimit = min + limitTestNum;
+        var testLimit = min + limitTestNum;
+        var timesPerSecond;
+        var timesPerMinute;
 
         if (argv.test == 'concurrent') {
 
@@ -139,7 +141,9 @@ function runTest(speedtestTiming) {
             timesPerMinute = (60 / timesPerSecond) * testLimit;
             // console.log(timesPerMinute);
 
-        } else if (argv.test == 'persecond') {
+        } else 
+        //if (argv.test == 'persecond') 
+        {
     
             limiter = new Bottleneck({
                 reservoir: testLimit, // initial value
